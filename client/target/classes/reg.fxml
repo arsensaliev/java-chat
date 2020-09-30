@@ -1,7 +1,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import java.net.URL?>
 <VBox fx:controller="client.RegController"
       xmlns:fx="http://javafx.com/fxml" alignment="center" >
+
+    <stylesheets>
+        <URL value="@/css/style.css"/>
+    </stylesheets>
 
     <HBox>
         <Label text="Login:" prefWidth="100" />

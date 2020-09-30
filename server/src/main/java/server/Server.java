@@ -12,13 +12,20 @@ public class Server {
     private List<ClientHandler> clients;
     private AuthService authService;
 
-    private int PORT = 8008;
+    private int PORT = 8189;
     ServerSocket server = null;
     Socket socket = null;
 
     public Server() {
         clients = new Vector<>();
-        authService = new SimpleAuthService();
+
+//        authService = new SimpleAuthService();
+        //==============//
+        if (!SQLHandler.connect()) {
+            throw new RuntimeException("Не удалось подключиться к БД");
+        }
+        authService = new DBAuthService();
+        //==============//
 
         try {
             server = new ServerSocket(PORT);
@@ -34,6 +41,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            SQLHandler.disconnect();
             try {
                 server.close();
             } catch (IOException e) {
@@ -50,6 +58,10 @@ public class Server {
         SimpleDateFormat formater = new SimpleDateFormat("HH:mm:ss");
 
         String message = String.format(" %s %s : %s", formater.format(new Date()), sender.getNickname(), msg);
+
+        //==============//
+        SQLHandler.addMessage(sender.getNickname(), "null", msg, formater.format(new Date()));
+        //==============//
         for (ClientHandler c : clients) {
             c.sendMsg(message);
         }
@@ -60,6 +72,11 @@ public class Server {
         for (ClientHandler c : clients) {
             if (c.getNickname().equals(receiver)) {
                 c.sendMsg(message);
+
+                //==============//
+                SQLHandler.addMessage(sender.getNickname(),receiver,msg,"once upon a time");
+                //==============//
+
                 if (!c.equals(sender)) {
                     sender.sendMsg(message);
                 }
@@ -91,7 +108,7 @@ public class Server {
         return false;
     }
 
-    private void broadcastClientList() {
+    void broadcastClientList() {
         StringBuilder sb = new StringBuilder("/clientlist ");
         for (ClientHandler c : clients) {
             sb.append(c.getNickname()).append(" ");

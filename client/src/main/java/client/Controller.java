@@ -42,7 +42,7 @@ public class Controller implements Initializable {
     public ListView<String> clientList;
 
     private final String IP_ADDRESS = "localhost";
-    private final int PORT = 8008;
+    private final int PORT = 8189;
 
 
     private Socket socket;
@@ -56,6 +56,9 @@ public class Controller implements Initializable {
     private Stage stage;
     private Stage regStage;
     private RegController regController;
+    ///==============///
+    private String login;
+    ///==============///
 
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
@@ -68,6 +71,9 @@ public class Controller implements Initializable {
 
         if (!authenticated) {
             nickname = "";
+            ///==============///
+            History.stop();
+            ///==============///
         }
         textArea.clear();
         setTitle(nickname);
@@ -117,6 +123,10 @@ public class Controller implements Initializable {
                             if (str.startsWith("/authok")) {
                                 nickname = str.split(" ", 2)[1];
                                 setAuthenticated(true);
+                                ///==============///
+                                textArea.appendText(History.getLast100LinesOfHistory(login));
+                                History.start(login);
+                                ///==============///
                                 break;
                             }
 
@@ -147,8 +157,18 @@ public class Controller implements Initializable {
                                         }
                                     });
                                 }
+
+                                //==============//
+                                if (str.startsWith("/yournickis ")) {
+                                    nickname = str.split(" ")[1];
+                                    setTitle(nickname);
+                                }
+                                //==============//
                             } else {
                                 textArea.appendText(str + "\n");
+                                ///==============///
+                                History.writeLine(str);
+                                ///==============///
                             }
                         }
                     } catch (RuntimeException e) {
@@ -191,7 +211,10 @@ public class Controller implements Initializable {
             out.writeUTF(String.format("/auth %s %s", loginField.getText().trim().toLowerCase(),
                     passwordField.getText().trim()));
             passwordField.clear();
+            ///==============///
 
+            login = loginField.getText();
+            ///==============///
         } catch (IOException e) {
             e.printStackTrace();
         }
