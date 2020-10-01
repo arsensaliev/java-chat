@@ -1,13 +1,9 @@
 package server;
 
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleAuthService implements AuthService {
-    private Connection connection;
-    private Statement statement;
-    private PreparedStatement psInsert;
     private class UserData {
         String login;
         String password;
@@ -22,54 +18,15 @@ public class SimpleAuthService implements AuthService {
 
     List<UserData> users;
 
-    public List<UserData> getUsers() {
-        return users;
-    }
-
     public SimpleAuthService() {
-        try {
-            connect();
-
-            users = new ArrayList<>();
-
-            try {
-                connect();
-
-                ResultSet rs = statement.executeQuery("SELECT login, password, nick FROM users;");
-                while (rs.next()) {
-                    users.add(new UserData(rs.getString("login"), rs.getString("password"), rs.getString("nick")));
-                }
-                rs.close();
-
-            } catch (ClassNotFoundException | SQLException e) {
-                e.printStackTrace();
-            } finally {
-                disconnect();
-            }
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        } finally {
-            disconnect();
+        users = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            users.add(new UserData("login" + i, "pass" + i, "nick" + i));
         }
-    }
 
-    private void disconnect() {
-        try {
-            statement.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        try {
-            connection.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
-
-    private void connect() throws ClassNotFoundException, SQLException {
-        Class.forName("org.sqlite.JDBC");
-        connection = DriverManager.getConnection("jdbc:sqlite:database.db");
-        statement = connection.createStatement();
+        users.add(new UserData("qwe" , "qwe" , "qwe" ));
+        users.add(new UserData("asd" , "asd" , "asd" ));
+        users.add(new UserData("zxc" , "zxc" , "zxc" ));
     }
 
     @Override
@@ -82,7 +39,6 @@ public class SimpleAuthService implements AuthService {
         return null;
     }
 
-
     @Override
     public boolean registration(String login, String password, String nickname) {
         for (UserData user : users) {
@@ -90,27 +46,12 @@ public class SimpleAuthService implements AuthService {
                 return false;
             }
         }
-
-        users.add(new UserData(login, password, nickname));
-
-        try {
-            connect();
-
-            psInsert = connection.prepareStatement("INSERT INTO users (login, password, nick) VALUES (?, ?, ?);");
-            psInsert.setString(1, login);
-            psInsert.setString(2, password);
-            psInsert.setString(3, nickname);
-
-            psInsert.executeUpdate();
-
-            psInsert.close();
-
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        } finally {
-            disconnect();
-        }
-
+        users.add(new UserData(login , password, nickname ));
         return true;
+    }
+
+    @Override
+    public boolean changeNick(String oldNickname, String newNickname) {
+        return false;
     }
 }
